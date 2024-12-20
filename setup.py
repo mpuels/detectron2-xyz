@@ -7,12 +7,19 @@ import shutil
 from os import path
 from setuptools import find_packages, setup
 from typing import List
-import torch
+
+# Ensure torch is installed before proceeding
+try:
+    import torch
+except ImportError:
+    import subprocess
+    subprocess.check_call(["pip", "install", "torch"])
+    import torch
+
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
 torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
 assert torch_ver >= [1, 8], "Requires PyTorch >= 1.8"
-
 
 def get_version():
     init_py_path = path.join(path.abspath(path.dirname(__file__)), "detectron2", "__init__.py")
@@ -35,7 +42,6 @@ def get_version():
         with open(init_py_path, "w") as f:
             f.write("".join(new_init_py))
     return version
-
 
 def get_extensions():
     this_dir = path.dirname(path.abspath(__file__))
@@ -102,7 +108,6 @@ def get_extensions():
 
     return ext_modules
 
-
 def get_model_zoo_configs() -> List[str]:
     """
     Return a list of configs to include in package for model zoo. Copy over these configs inside
@@ -134,7 +139,6 @@ def get_model_zoo_configs() -> List[str]:
         "configs/**/*.py", recursive=True
     )
     return config_paths
-
 
 # For projects that are relative small and provide features that are very close
 # to detectron2's core functionalities, we install them under detectron2.projects
